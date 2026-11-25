@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f4f6f1">
+  <title>Table & Thyme | Food Ordering</title>
+  <link rel="stylesheet" href="/styles.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="Table and Thyme home"><span class="brand-mark">T</span><span>table <i>&</i> thyme</span></a>
+    <div class="account" id="account-area">
+      <span class="account-status" id="account-status">Browsing as guest</span>
+      <button class="button button-quiet" id="login-toggle" type="button">Sign in</button>
+      <button class="button button-quiet hidden" id="logout-button" type="button">Sign out</button>
+    </div>
+  </header>
+  <main class="page-shell">
+    <section class="intro-band" aria-labelledby="page-title">
+      <div>
+        <p class="eyebrow">A neighborhood kitchen, online</p>
+        <h1 id="page-title">Good food.<br><em>No guesswork.</em></h1>
+      </div>
+      <p class="intro-copy">Browse today's fictional kitchen menu, check portions, and place an order for pickup.</p>
+    </section>
+
+    <section class="login-panel hidden" id="login-panel" aria-labelledby="login-title">
+      <div><p class="eyebrow">Your table</p><h2 id="login-title">Sign in to order</h2></div>
+      <form id="login-form" class="login-form">
+        <label>Email<input id="email-input" type="email" autocomplete="username" required></label>
+        <label>Password<input id="password-input" type="password" autocomplete="current-password" required></label>
+        <button class="button button-primary" type="submit">Continue</button>
+      </form>
+      <a class="register-link" href="/register">New here? Create an account</a>
+      <p class="notice" id="login-error" role="alert"></p>
+    </section>
+
+    <div class="workspace">
+      <section class="menu-section" aria-labelledby="menu-heading">
+        <div class="section-heading">
+          <div><p class="eyebrow">Made for right now</p><h2 id="menu-heading">The menu <span id="menu-count"></span></h2></div>
+          <button class="button button-quiet" id="refresh-menu" type="button" aria-label="Refresh menu">Refresh</button>
+        </div>
+        <form class="filters" id="filter-form">
+          <label class="search-field">Find a dish<input id="keyword-filter" type="search" placeholder="Dosa, curry, something crisp"></label>
+          <label>Category<select id="category-filter"><option value="">All categories</option></select></label>
+          <label>Up to ₹<input id="price-filter" type="number" min="1" step="1" placeholder="Any price"></label>
+          <label class="check-label"><input id="vegetarian-filter" type="checkbox"> Vegetarian</label>
+          <button class="button button-dark" type="submit">Search</button>
+        </form>
+        <p class="notice" id="menu-error" role="alert"></p>
+        <div class="menu-grid" id="menu-grid" aria-live="polite"></div>
+      </section>
+
+      <aside class="order-rail" aria-label="Your orders">
+        <section class="cart-panel" aria-labelledby="cart-heading">
+          <div class="section-heading compact"><div><p class="eyebrow">Build an order</p><h2 id="cart-heading">Your basket</h2></div><span class="count-badge" id="cart-count">0</span></div>
+          <div id="cart-lines" class="cart-lines"><p class="muted">Choose something from the menu.</p></div>
+          <div class="cart-total"><span>Estimated total</span><strong id="cart-total">₹0.00</strong></div>
+          <button class="button button-primary full-width" id="place-order" type="button" disabled>Sign in to order</button>
+          <p class="notice" id="order-error" role="alert"></p>
+        </section>
+        <section class="orders-panel" aria-labelledby="orders-heading">
+          <div class="section-heading compact"><div><p class="eyebrow">Your kitchen tickets</p><h2 id="orders-heading">Recent orders</h2></div><button class="icon-button" id="refresh-orders" type="button" aria-label="Refresh orders" title="Refresh orders">↻</button></div>
+          <div id="orders-list" class="orders-list"><p class="muted">Sign in to view your orders.</p></div>
+        </section>
+      </aside>
+    </div>
+
+    <section class="assistant-section" aria-labelledby="assistant-heading">
+      <div class="section-heading">
+        <div><p class="eyebrow">A useful extra pair of hands</p><h2 id="assistant-heading">Ask the kitchen</h2></div>
+        <button class="button button-quiet" id="new-chat" type="button" disabled>New conversation</button>
+      </div>
+      <div class="chat-layout">
+        <nav class="chat-sessions" aria-label="Saved conversations"><div class="chat-nav-heading">YOUR CONVERSATIONS</div><div id="chat-session-list"><p class="muted">Sign in to save a conversation.</p></div></nav>
+        <div class="chat-workspace">
+          <div class="chat-transcript" id="chat-transcript" aria-live="polite"><p class="muted">Sign in to start a conversation with the restaurant assistant.</p></div>
+          <form class="chat-composer" id="chat-form">
+            <label for="chat-input">Message</label>
+            <textarea id="chat-input" maxlength="4000" rows="3" placeholder="Ask about the menu, an order, or a policy" disabled required></textarea>
+            <div class="composer-footer"><span id="chat-status" class="muted">Your conversation is saved to your account.</span><button class="button button-dark" id="send-chat" type="submit" disabled>Send</button></div>
+          </form>
+          <p class="notice" id="chat-error" role="alert"></p>
+        </div>
+      </div>
+    </section>
+
+    <section class="admin-section hidden" id="admin-section" aria-labelledby="admin-heading">
+      <div class="section-heading"><div><p class="eyebrow">Kitchen controls</p><h2 id="admin-heading">Catalog & order desk</h2></div></div>
+      <div class="admin-grid">
+        <form class="admin-form" id="menu-editor">
+          <h3 id="menu-editor-title">Add menu item</h3>
+          <input id="edit-item-id" type="hidden">
+          <label>Title<input id="item-title" maxlength="120" required minlength="3"></label>
+          <label>Category<input id="item-category" maxlength="60" required></label>
+          <label>Description<textarea id="item-description" maxlength="2000" rows="2"></textarea></label>
+          <div class="form-row"><label>Price (₹)<input id="item-price" type="number" min="0.01" step="0.01" required></label><label>Portions<input id="item-capacity" type="number" min="0" step="1" required></label></div>
+          <label class="check-label"><input id="item-vegetarian" type="checkbox"> Vegetarian</label>
+          <label>Declared allergens, comma separated<input id="item-allergens" maxlength="500"></label>
+          <div class="button-row"><button class="button button-primary" type="submit">Save item</button><button class="button button-quiet" id="clear-editor" type="button">Clear</button></div>
+          <p class="notice" id="admin-error" role="alert"></p>
+        </form>
+        <div class="admin-list-wrap"><h3>Active items</h3><div id="admin-menu-list" class="admin-menu-list"></div></div>
+        <div class="status-editor"><h3>Order status</h3><label>Order<select id="admin-order-select"><option value="">Choose an order</option></select></label><label>Next status<select id="admin-status-select"><option value="ACCEPTED">Accepted</option><option value="PREPARING">Preparing</option><option value="READY">Ready</option><option value="COMPLETED">Completed</option><option value="CANCELLED">Cancelled</option></select></label><button class="button button-dark" id="save-status" type="button">Update status</button><p class="notice" id="status-error" role="alert"></p></div>
+        <form class="document-upload" id="document-upload">
+          <h3>Policy documents</h3>
+          <label>Upload PDF, DOCX, or TXT<input id="policy-file" type="file" accept=".pdf,.docx,.txt,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain" required></label>
+          <button class="button button-primary" type="submit">Index document</button>
+          <p class="notice" id="document-error" role="alert"></p>
+        </form>
+      </div>
+    </section>
+    <footer><span>Fictional menu · All prices in INR</span><span>Declared allergens are listed where provided. Cross-contact cannot be ruled out.</span></footer>
+  </main>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>

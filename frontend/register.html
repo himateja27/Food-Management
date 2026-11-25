@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f4f6f1">
+  <title>Create an account | Table & Thyme</title>
+  <link rel="stylesheet" href="/styles.css">
+  <script src="/register.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="Table and Thyme home"><span class="brand-mark">T</span><span>table <i>&</i> thyme</span></a>
+    <a class="button button-quiet" href="/">Sign in</a>
+  </header>
+  <main class="page-shell register-page">
+    <section class="intro-band" aria-labelledby="register-heading">
+      <div><p class="eyebrow">A place at the table</p><h1 id="register-heading">Create<br><em>your account.</em></h1></div>
+      <p class="intro-copy">Join the Table & Thyme ordering dashboard.</p>
+    </section>
+    <section class="register-shell" aria-label="Create customer account">
+      <form class="register-form" id="register-form">
+        <label>Full name<input id="register-name" name="full_name" autocomplete="name" minlength="1" maxlength="120" required></label>
+        <label>Email<input id="register-email" name="email" type="email" autocomplete="email" maxlength="254" required></label>
+        <label>Password<input id="register-password" name="password" type="password" autocomplete="new-password" minlength="12" maxlength="128" required><small>Use at least 12 characters.</small></label>
+        <label>Confirm password<input id="register-confirm" type="password" autocomplete="new-password" minlength="12" maxlength="128" required></label>
+        <button class="button button-primary" type="submit">Create account</button>
+        <p id="register-error" class="notice" role="alert"></p>
+        <p id="register-success" class="register-success" role="status"></p>
+        <a id="return-to-login" class="register-link hidden" href="/">Return to sign in</a>
+      </form>
+    </section>
+    <footer><span>Fictional restaurant · Demo accounts remain separate</span><span>New registrations are customer accounts.</span></footer>
+  </main>
+</body>
+</html>

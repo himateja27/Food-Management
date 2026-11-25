@@ -1,0 +1,10 @@
+Table & Thyme Order and Cancellation Policy
+
+Order confirmation
+An order is placed only after the ordering service confirms it. Prices shown in the menu are the restaurant's current listed prices. The order receipt records the price at the time the order is accepted.
+
+Cancellation
+Customers may request cancellation while an order is in PLACED or ACCEPTED status. Cancellation is not available after preparation begins. If the ordering service confirms cancellation, the reserved portions are returned to available capacity.
+
+Fictional service
+Table & Thyme is a fictional restaurant used for a software demonstration. Orders and pickup status are simulated; no payment or delivery provider is connected.

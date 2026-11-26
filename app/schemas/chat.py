@@ -37,6 +37,8 @@ class ChatMessageRead(BaseModel):
 
 
 class PendingActionRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     action_type: str
     payload: dict[str, Any]

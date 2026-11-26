@@ -29,6 +29,7 @@ form.addEventListener("submit", async (event) => {
     if (!response.ok) throw new Error(payload.message || `Registration failed (${response.status})`);
     form.reset();
     successMessage.textContent = `Account created for ${payload.email}. Sign in to continue.`;
+    returnLink.href = `/login?email=${encodeURIComponent(payload.email)}`;
     returnLink.classList.remove("hidden");
   } catch (error) {
     errorMessage.textContent = error.message;

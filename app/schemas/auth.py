@@ -2,6 +2,11 @@ from pydantic import BaseModel
 from pydantic import ConfigDict, Field, SecretStr
 
 
+class LoginRequest(BaseModel):
+    email: str = Field(min_length=3, max_length=254, pattern=r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+    password: SecretStr = Field(min_length=8, max_length=128)
+
+
 class UserRead(BaseModel):
     id: int
     email: str
@@ -19,4 +24,4 @@ class RegisterRequest(BaseModel):
 
     full_name: str = Field(min_length=1, max_length=120)
     email: str = Field(min_length=3, max_length=254, pattern=r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
-    password: SecretStr = Field(min_length=12, max_length=128)
+    password: SecretStr = Field(min_length=8, max_length=128)

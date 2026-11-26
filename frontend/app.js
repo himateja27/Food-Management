@@ -58,7 +58,6 @@ function setSignedIn(user) {
   byId("place-order").disabled = state.cart.size === 0;
   byId("admin-section").classList.toggle("hidden", user.role !== "ADMIN");
   loadOrders();
-  byId("new-chat").disabled = false;
   byId("chat-input").disabled = false;
   byId("send-chat").disabled = false;
   loadChatSessions();
@@ -79,7 +78,6 @@ function clearSignedIn() {
   byId("admin-section").classList.add("hidden");
   state.chatSessionId = null;
   state.chatSessions = [];
-  byId("new-chat").disabled = true;
   byId("chat-input").disabled = true;
   byId("send-chat").disabled = true;
   byId("chat-session-list").replaceChildren(makeText("p", "Sign in to save a conversation.", "muted"));
@@ -171,6 +169,7 @@ function addToCart(item) {
   state.pendingOrderAttempt = null;
   sessionStorage.removeItem("pending-order-attempt");
   renderCart();
+  showToast(`${item.title} added to your basket.`);
 }
 
 function updateCart(itemId, difference) {
@@ -589,15 +588,20 @@ async function sendChatMessage(event) {
 }
 
 byId("login-toggle").addEventListener("click", () => byId("login-panel").classList.toggle("hidden"));
-byId("logout-button").addEventListener("click", () => clearSignedIn());
+byId("logout-button").addEventListener("click", async () => {
+  try { await api("/api/auth/logout", { method: "POST" }); } catch (_) {}
+  clearSignedIn();
+});
 byId("login-form").addEventListener("submit", async (event) => {
   event.preventDefault();
   setError("login-error");
   const email = byId("email-input").value.trim();
   const password = byId("password-input").value;
-  state.credentials = `Basic ${btoa(`${email}:${password}`)}`;
   try {
-    const user = await api("/api/auth/me");
+    const user = await api("/api/auth/login", {
+      method: "POST",
+      body: JSON.stringify({ email, password }),
+    });
     byId("password-input").value = "";
     setSignedIn(user);
     renderCart();
@@ -614,8 +618,38 @@ byId("menu-editor").addEventListener("submit", saveMenuItem);
 byId("document-upload").addEventListener("submit", uploadPolicyDocument);
 byId("clear-editor").addEventListener("click", resetEditor);
 byId("save-status").addEventListener("click", updateOrderStatus);
-byId("new-chat").addEventListener("click", createChatSession);
-byId("chat-form").addEventListener("submit", sendChatMessage);
+const newChatButton = byId("new-chat");
+if (newChatButton) newChatButton.addEventListener("click", createChatSession);
+const chatForm = byId("chat-form");
+if (chatForm) chatForm.addEventListener("submit", sendChatMessage);
 
 renderCart();
 loadMenu();
+
+const openChat = byId("open-chat");
+const closeChat = byId("close-chat");
+const assistantWidget = byId("assistant-widget");
+if (openChat && assistantWidget) {
+  openChat.addEventListener("click", () => {
+    const willOpen = assistantWidget.classList.contains("hidden");
+    assistantWidget.classList.toggle("hidden", !willOpen);
+    openChat.setAttribute("aria-expanded", String(willOpen));
+    if (willOpen) {
+      const chatInput = byId("chat-input");
+      if (chatInput) chatInput.focus();
+    }
+  });
+}
+if (closeChat && assistantWidget && openChat) {
+  closeChat.addEventListener("click", () => {
+    assistantWidget.classList.add("hidden");
+    openChat.setAttribute("aria-expanded", "false");
+  });
+}
+
+(async () => {
+  try {
+    const user = await api("/api/auth/me");
+    setSignedIn(user);
+  } catch (_) {}
+})();

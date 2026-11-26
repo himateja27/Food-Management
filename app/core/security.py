@@ -17,6 +17,37 @@ from app.models import User
 basic_scheme = HTTPBasic(auto_error=False)
 password_hasher = PasswordHash.recommended()
 _dummy_password_hash = password_hasher.hash("unusable-demo-password")
+BROWSER_SESSION_COOKIE = "food_session"
+BROWSER_SESSION_TTL = 12 * 60 * 60
+
+
+def create_browser_session_token(user_id: int) -> str:
+    settings = get_settings()
+    secret = settings.internal_api_secret
+    if len(secret) < 32:
+        raise RuntimeError("Browser session signing secret is not configured")
+    expires = int(time.time()) + BROWSER_SESSION_TTL
+    payload = f"{user_id}:{expires}"
+    signature = hmac.new(secret.encode(), payload.encode(), hashlib.sha256).hexdigest()
+    return f"{payload}:{signature}"
+
+
+def verify_browser_session_token(token: str) -> int | None:
+    settings = get_settings()
+    secret = settings.internal_api_secret
+    if len(secret) < 32:
+        return None
+    try:
+        payload, signature = token.rsplit(":", 1)
+        actor_id, expires = payload.split(":", 2)
+        expected = hmac.new(secret.encode(), payload.encode(), hashlib.sha256).hexdigest()
+        if not hmac.compare_digest(signature, expected):
+            return None
+        if int(expires) <= int(time.time()) or int(actor_id) <= 0:
+            return None
+        return int(actor_id)
+    except (TypeError, ValueError):
+        return None
 
 
 def get_current_user(
@@ -48,6 +79,13 @@ def get_current_user(
         if user is None or not user.is_active:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid internal identity")
         return user
+    session_token = request.cookies.get(BROWSER_SESSION_COOKIE)
+    if session_token:
+        actor_id = verify_browser_session_token(session_token)
+        if actor_id is not None:
+            user = session.get(User, actor_id)
+            if user is not None and user.is_active:
+                return user
     if credentials is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Authentication required", headers={"WWW-Authenticate": "Basic"})
     user = session.scalar(select(User).where(User.email == credentials.username.lower()))

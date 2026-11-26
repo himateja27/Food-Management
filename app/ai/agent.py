@@ -241,15 +241,80 @@ class GeminiAgent:
         self.session = session
         self.tool_client = tool_client or AgentToolClient()
 
-    def respond(self, prompt: str, recent_messages: list[ChatMessage], *, user_id: int, session_id: int, message_id: int, mode: str = "AGENT") -> AssistantResult:
-        settings = get_settings()
-        if not settings.gemini_api_key:
-            self.tool_client.close()
+    def _respond_without_gemini(self, prompt: str, *, user_id: int, session_id: int, message_id: int, mode: str) -> AssistantResult:
+        lowered = prompt.lower()
+        wants_order = any(word in lowered for word in ("order", "buy", "get me", "one plate", "plate", "idli", "idly"))
+        wants_read = any(word in lowered for word in ("menu", "available", "availability", "price", "stock", "dish", "dosa", "biryani", "idli", "idly"))
+        if not wants_order and not wants_read:
             return AssistantResult(
-                text="I can't access live restaurant information right now. Your message is saved; please try again shortly.",
+                text="I can help with live menu information and order proposals. Ask for a dish or say what you would like to order.",
                 mode=mode,
                 outcome_code="AI_UNAVAILABLE",
             )
+        keywords = "idli" if any(word in lowered for word in ("idli", "idly")) else None
+        if keywords is None:
+            for candidate in ("dosa", "biryani", "paneer", "masala", "sambar"):
+                if candidate in lowered:
+                    keywords = candidate
+                    break
+        try:
+            search = self.tool_client.dispatch(
+                "search_menu_items",
+                {"keyword": keywords} if keywords else {},
+                user_id=user_id,
+                session_id=session_id,
+                message_id=message_id,
+            )
+            result, safe_input, _, _ = search
+            items = result.get("items", []) if isinstance(result, dict) else []
+            if not items:
+                return AssistantResult(
+                    text="No active menu item matched that request. Browse the live menu and try a listed dish name.",
+                    mode=mode,
+                    outcome_code="MENU_ITEM_NOT_FOUND",
+                )
+            if wants_order:
+                quantity = 1
+                for count_word, count in (("one", 1), ("two", 2), ("three", 3), ("four", 4), ("five", 5)):
+                    if count_word in lowered:
+                        quantity = count
+                        break
+                proposal = self.tool_client.dispatch(
+                    "create_order",
+                    {"items": [{"menu_item_id": int(items[0]["id"]), "quantity": quantity}]},
+                    user_id=user_id,
+                    session_id=session_id,
+                    message_id=message_id,
+                )
+                proposal_result, _, action_id, _ = proposal
+                action = proposal_result.get("action") if isinstance(proposal_result, dict) else None
+                if action:
+                    impact = action.get("impact", {})
+                    lines = impact.get("items", [])
+                    terms = ", ".join(f'{line.get("title")} x{line.get("quantity")} at ₹{line.get("unit_price")}' for line in lines)
+                    total = impact.get("total_amount", "0.00")
+                    return AssistantResult(
+                        text=f"I found {items[0]['title']} in the live menu. I prepared a pending order for {terms or 'the selected dish'}, total ₹{total}. No order was placed. Press Confirm to complete it or Reject to decline.",
+                        mode="MIXED",
+                        pending_action_id=action_id,
+                        outcome_code="PROPOSAL_CREATED",
+                    )
+            lines = ", ".join(f"{item['title']} (₹{item['price']}, {item['capacity']} portions)" for item in items[:5])
+            return AssistantResult(text=f"Live menu matches: {lines}.", mode="AGENT")
+        except Exception:
+            self.session.rollback()
+            return AssistantResult(
+                text="I couldn't complete that live restaurant lookup just now. Your message is saved; please try again.",
+                mode=mode,
+                outcome_code="AGENT_UNAVAILABLE",
+            )
+        finally:
+            self.tool_client.close()
+
+    def respond(self, prompt: str, recent_messages: list[ChatMessage], *, user_id: int, session_id: int, message_id: int, mode: str = "AGENT") -> AssistantResult:
+        settings = get_settings()
+        if not settings.gemini_api_key:
+            return self._respond_without_gemini(prompt, user_id=user_id, session_id=session_id, message_id=message_id, mode=mode)
         context = "\n".join(f"{message.role}: {message.content}" for message in recent_messages[-8:])
         contents: list[Any] = [
             types.Content(role="user", parts=[types.Part(text=f"Recent conversation:\n{context}\n\nCurrent request:\n{prompt}")])

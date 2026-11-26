@@ -18,7 +18,11 @@ POLICY_TERMS = (
     "are you open",
     "contains",
 )
-LIVE_TERMS = ("menu", "available", "availability", "portion", "stock", "price", "cost", "order", "cancel", "dish", "dishes", "recommend", "do you have")
+LIVE_TERMS = (
+    "menu", "available", "availability", "portion", "stock", "price", "cost",
+    "order", "cancel", "dish", "dishes", "idli", "idly", "dosa", "biryani",
+    "recommend", "do you have", "can i get", "can you get", "buy", "place",
+)
 
 
 class ChatOrchestrator:

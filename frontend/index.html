@@ -69,24 +69,25 @@
       </aside>
     </div>
 
-    <section class="assistant-section" aria-labelledby="assistant-heading">
-      <div class="section-heading">
-        <div><p class="eyebrow">A useful extra pair of hands</p><h2 id="assistant-heading">Ask the kitchen</h2></div>
-        <button class="button button-quiet" id="new-chat" type="button" disabled>New conversation</button>
+    <aside class="assistant-widget hidden" id="assistant-widget" aria-label="Restaurant assistant">
+      <div class="assistant-widget-header">
+        <div><p class="eyebrow">Table & Thyme</p><h2 id="assistant-heading">Ask the kitchen</h2></div>
+        <button class="icon-button" id="close-chat" type="button" aria-label="Close assistant" title="Close assistant">×</button>
       </div>
       <div class="chat-layout">
-        <nav class="chat-sessions" aria-label="Saved conversations"><div class="chat-nav-heading">YOUR CONVERSATIONS</div><div id="chat-session-list"><p class="muted">Sign in to save a conversation.</p></div></nav>
+        <nav class="chat-sessions" aria-label="Saved conversations"><div class="chat-nav-heading">CONVERSATIONS</div><div id="chat-session-list"><p class="muted">Sign in to save a conversation.</p></div></nav>
         <div class="chat-workspace">
           <div class="chat-transcript" id="chat-transcript" aria-live="polite"><p class="muted">Sign in to start a conversation with the restaurant assistant.</p></div>
           <form class="chat-composer" id="chat-form">
             <label for="chat-input">Message</label>
             <textarea id="chat-input" maxlength="4000" rows="3" placeholder="Ask about the menu, an order, or a policy" disabled required></textarea>
-            <div class="composer-footer"><span id="chat-status" class="muted">Your conversation is saved to your account.</span><button class="button button-dark" id="send-chat" type="submit" disabled>Send</button></div>
+            <div class="composer-footer"><span id="chat-status" class="muted">Saved to your account.</span><button class="button button-dark" id="send-chat" type="submit" disabled>Send</button></div>
           </form>
           <p class="notice" id="chat-error" role="alert"></p>
         </div>
       </div>
-    </section>
+    </aside>
+    <button class="chat-launcher" id="open-chat" type="button" aria-label="Open restaurant assistant" aria-expanded="false" title="Ask the kitchen">AI</button>
 
     <section class="admin-section hidden" id="admin-section" aria-labelledby="admin-heading">
       <div class="section-heading"><div><p class="eyebrow">Kitchen controls</p><h2 id="admin-heading">Catalog & order desk</h2></div></div>
